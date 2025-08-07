@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remembering Our Nights</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* General Setup and Variables */
+        :root {
+            --bg-color-start: #121212;
+            --bg-color-end: #1a1a2e;
+            --text-color: #ffffff;
+            --card-bg-color: rgba(255, 255, 255, 0.1);
+            --card-border-color: rgba(255, 255, 255, 0.2);
+            --glow-color: #ffb6c1;
+            --pin-color: #ffb6c1;
+            --font-main: 'Poppins', sans-serif;
+            --font-handwritten: 'Dancing Script', cursive;
+        }
+
+        /* --- Global Styles --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+            color: var(--text-color);
+            background: linear-gradient(180deg, var(--bg-color-start) 0%, var(--bg-color-end) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Container for the entire page content to allow for proper spacing */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- Loading Screen --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, var(--bg-color-start) 0%, var(--bg-color-end) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-family: var(--font-handwritten);
+            font-size: 2rem;
+            transition: opacity 1s ease-in-out;
+            opacity: 1;
+            z-index: 100;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--glow-color);
+            border-radius: 50%;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Custom Scrollbar Styling (for a better UX) --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--glow-color);
+            border-radius: 10px;
+        }
+
+        /* --- Background Animations & Elements --- */
+        .background-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        /* Animated twinkling star field */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+            opacity: var(--opacity);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: var(--opacity); }
+            50% { opacity: calc(var(--opacity) * 0.3); }
+        }
+
+        /* Subtle floating "miss you..." text */
+        .ambient-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-size: 10vw;
+            font-family: var(--font-handwritten);
+            color: rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            animation: float-text 20s ease-in-out infinite;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        @keyframes float-text {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.05; }
+            50% { transform: translate(-50%, -55%) scale(1.05); opacity: 0.07; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.05; }
+        }
+
+        /* --- Crescent Moon SVG --- */
+        .crescent-moon {
+            position: fixed;
+            top: 5vh;
+            right: 5vw;
+            width: clamp(120px, 20vw, 250px);
+            height: auto;
+            transform-origin: bottom center;
+            transition: transform 0.1s ease-out;
+            pointer-events: none;
+            z-index: 1;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        /* --- Main Message Display Card --- */
+        .main-message-card {
+            position: relative;
+            background: var(--card-bg-color);
+            border: 1px solid var(--card-border-color);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            min-height: 350px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            animation: card-breathe 8s ease-in-out infinite; /* Added gentle pulse effect */
+        }
+        
+        @keyframes card-breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+            50% { transform: scale(1.01); box-shadow: 0 8px 40px rgba(255, 182, 193, 0.2); }
+        }
+
+        /* Next button styling */
+        .next-message-btn {
+            background: var(--glow-color);
+            color: var(--bg-color-end);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 2rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 1rem;
+            align-self: flex-end;
+        }
+        
+        .next-message-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+        
+        .next-message-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Message selector container */
+        .message-selector-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            z-index: 2;
+        }
+        
+        /* New animations for selector cards as they appear */
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-selector-card {
+            background: var(--card-bg-color);
+            border: 1px solid var(--card-border-color);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: center;
+            opacity: 0; /* Initially hidden for animation */
+        }
+
+        .message-selector-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(255, 182, 193, 0.3);
+        }
+
+        .message-selector-card.active {
+            border-color: var(--glow-color);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        .selector-date {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            font-family: var(--font-main);
+        }
+
+        .selector-preview {
+            font-family: var(--font-handwritten);
+            font-size: 1.1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 0.5rem;
+        }
+        
+        /* --- Heart Pulse Animation --- */
+        .heart-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 182, 193, 0.1);
+            border-radius: 50%;
+            animation: pulse-heart 3s infinite ease-in-out;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes pulse-heart {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.2; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+        }
+
+        /* --- Footer --- */
+        .footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 4rem;
+            z-index: 2;
+            position: relative;
+        }
+
+        .footer-text {
+            font-family: var(--font-handwritten);
+            font-size: 1.5rem;
+            color: var(--text-color);
+            text-shadow: 0 0 10px var(--glow-color);
+            opacity: 0.8;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px var(--glow-color); }
+            to { text-shadow: 0 0 15px var(--glow-color), 0 0 20px var(--glow-color); }
+        }
+        
+        /* New blinking/static animation for the title */
+        @keyframes static-flicker {
+            0% { text-shadow: none; }
+            50% { text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); }
+            52% { text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
+            100% { text-shadow: none; }
+        }
+        .title-glitch {
+            animation: static-flicker 5s ease-in-out infinite;
+        }
+
+        /* --- Mute/Unmute Button --- */
+        .audio-controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 10;
+        }
+
+        .audio-button {
+            background: var(--card-bg-color);
+            border: 1px solid var(--card-border-color);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .audio-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+        
+        .audio-button span {
+            font-size: 1.2rem;
+        }
+
+        /* Typing cursor effect */
+        .typing {
+            border-right: 2px solid white;
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { border-color: transparent; }
+            50% { border-color: white; }
+        }
+        
+        /* Floating Emojis */
+        .floating-emoji {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: float-emoji linear forwards;
+            z-index: 1;
+            opacity: 0;
+        }
+
+        @keyframes float-emoji {
+            0% { transform: translateY(100vh) translateX(var(--start-x)); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) translateX(calc(var(--start-x) + var(--drift))); opacity: 0; }
+        }
+
+        /* --- Shooting Star Animation --- */
+        .shooting-star {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px white;
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+            
+            /* Custom shooting star trail effect */
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100px;
+                height: 2px;
+                background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+                transform: rotate(-45deg);
+                transform-origin: 0% 50%;
+                opacity: 0;
+            }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .crescent-moon {
+                width: 80px;
+                top: 3vh;
+                right: 3vw;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .message-selector-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p style="margin-top: 1rem;">Loading your beautiful memories...</p>
+    </div>
+
+    <!-- Background Layer with Stars, Ambient Text, and Moon -->
+    <div class="background-wrap">
+        <div class="stars" id="stars"></div>
+        <div class="ambient-text">miss you...</div>
+        <div class="heart-pulse"></div>
+        <div class="shooting-star" id="shootingStar"></div>
+        <svg class="crescent-moon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 50,0 A 50,50 0 0,0 50,100 A 35,35 0 0,1 50,0" fill="#f5f3ce" />
+        </svg>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="container">
+        <!-- Main title -->
+        <h1 class="title-glitch" style="text-align: center; font-family: var(--font-handwritten); font-size: 3rem; color: var(--glow-color); text-shadow: 0 0 10px var(--glow-color), 0 0 20px rgba(210, 82, 101, 0.5); margin-bottom: 2rem;">All this messages made me to cry and laugh at the same time🎀🤍</h1>
+        <p style="text-align: center; font-family: var(--font-handwritten); font-size: 2rem; color: var(--glow-color); text-shadow: 0 0 10px var(--glow-color), 0 0 20px rgba(231, 214, 216, 0.908); margin-bottom: 2rem;">unna miss panurapa la etha pathu oru marii bettr ahh irrukum mu nee enna romba love panura mu ethu ellam enn fav message apo apo etha pathu blush ahepan mu ...hee heeheee..!🙈😁 </p>
+
+        <!-- Main message display area -->
+        <section class="main-message-card">
+            <span class="pin-icon">📌</span>
+            <p class="message-content" id="display-message-content">Click a message below to view it here.</p>
+            <div class="message-meta" id="display-message-meta"></div>
+            <button class="next-message-btn" id="next-message-btn">Next Message</button>
+        </section>
+
+        <!-- Grid for message selection cards -->
+        <section class="message-selector-grid" id="message-selector-container">
+            <!-- Message selector cards will be dynamically added here -->
+        </section>
+    </div>
+
+    <!-- Audio Player and Controls -->
+    <div class="audio-controls">
+        <audio id="background-music" loop>
+            <source src="WhatsApp Audio 2025-08-07 at 20.59.46_128320d2.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <button id="audio-button" class="audio-button" aria-label="Mute or Unmute Music">
+            <span id="audio-icon">🔇</span>
+        </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-text">Miss you mu romba all this msg make me feel better 🥹❤‍🩹</div>
+    </footer>
+
+    <script>
+        // --- JavaScript for Interactivity and Animations ---
+
+        // DOM elements
+        const moon = document.querySelector('.crescent-moon');
+        const audio = document.getElementById('background-music');
+        const audioButton = document.getElementById('audio-button');
+        const audioIcon = document.getElementById('audio-icon');
+        const starsContainer = document.getElementById('stars');
+        const shootingStar = document.getElementById('shootingStar');
+        const loadingScreen = document.getElementById('loading-screen');
+        const body = document.body;
+        const displayMessageContent = document.getElementById('display-message-content');
+        const displayMessageMeta = document.getElementById('display-message-meta');
+        const messageSelectorContainer = document.getElementById('message-selector-container');
+        const nextMessageBtn = document.getElementById('next-message-btn'); // New 'next' button
+
+        // State variables
+        let isMuted = true;
+        let isTyping = false;
+        let currentMessageIndex = 0; // Track the current message
+        
+        // Sample messages data
+        const messages = [
+            {
+                content: "Hello baby... Inga paaru oru vishayam un mind la nalla fix paniko..na unna vittu engayum eppavum endha situation vandhalum poga maten... Yen na nee enoda uyiru... literally my everything da... Enoda usuru paapa nee.. epdi da unna vittu poven...endha ponnu enoda place la irundalum avaluku vittu poga manasu varadu... Adhe mari tha enaku... Suthama nee ilama ennala iruka mudiyadu mu..na kalyanam panna unna tha kalyanam pannuven...unna tha torture panuven because your mine...and only mine andha urimaiya na yaruku vittu kuduka maaten...eppavum nee enaku tha da mama...solla pona nee enna rombha love panura...adhu nee solamaye enaku nallave theriyidu neraiya place la...na pakuren nee solama un love ah enaku express panuren apo lam manasu kulla nenachipen cha namma evlo kuduthu vechirukanum nu... Enaku unna avlo pidikum mu.. na chumma pechuku solala da aana nee Ilana na sethuren seriously... Nee ilada life enaku venam... Nee mattum tha en manasula iruken.. eppavum irupa...en manasula un place vera yarukum ila...no never na epdi unna vittu kudukuradu .. solu... Ennala mudiyadu pa... Na enniku unna vittu poga maten..epdiyavadu unna kalyanam pannipen yaaru othukurangalo ilayo na unna kalyanam pannipen.. unkooda tha kolanda pethupen.. Inga neeyu nanu mattum tha... Seriya inimelu sethruven nu lam solli enna ala vekada .. na irukura varaikum unaku edhuvum aagadu.. na unna nalla pathupen..cha aana un love iruku theriyum....oru vishayathula mattum na sure ah soluren... Nee enna love panura maari vera yarum enna kadhalika maatanga... Un alavuku love and mukiyama care lam yarta irundu kedaikadu enaku.. un motha love um enaku tha venum... I own all of it...na unkooda kadaisi varaikum vazhanum nu aasaiya iruku da .namma neraiya sanda podalam 1000 misunderstanding varatum ..aana adhulam anike pesi solve panidalam... Enna mu solura...ennala lam cha.. unna vitu epdi da .. nee enaku tha..na unkooda tha irupen..othukuren apo apo bit poduven unna torture panuvenu but remember that i won't stop.. innu unna nalla torture pannuven.. adhuku thana na iruken aana unna nalla pathupen...oru baby maari unna en madila vechi pathupen...seriya.... Enna sekram kalyanam panniko namma neraiya kolanda pethukanuuuuuuuuu...... I want 25 kids ..... Enna mu solura ... Indha msg ah save paniko.. unaku epo lam low ah feel panuriyo apo lam eduthu paru .. u will definitely feel better.. enna venum naalum Pannu aana enna vittu poirada .. seriya....",
+                date: "2025-06-25"
+            },
+            {
+                content: "Muu Inga paaru I know recent days unna rombha hurt panuren breakup pannikalam nu solli solli first of all sorry for that... unn vittu poga mudiyadu than na othukuren..adhu unaku theriyum aana chinna vishayathuku rombha kochikuren kovapaduren...apdi irukurapa edho varthaiya vituduren..adhu unaku hurting ah irukum la..I am soo soo soo sorry for it.. breakup Nu oru kovathula tha soluvene thavara enniku adha mean panni sola maten mu.. enaku nee venum eppavum enna aanalu..enaku nee tha..so soo sorry da.. unna rombha kastha paduthiten la... ennala thakkunu Indha behavior ah stop panna mudiyuma na therla aana konjam konjam ah stop panuren...max unna hurt pannada maari enaku onne onnu mattum nee pannanu nane breakup nu sonnalum..(solla maten but oru pechuku) enna vitu pogada..please... enna vitrada.. un kal la vizha na ready mu..just don't leave me..na chinna chinna vishayathuku lam over react panuren.. unna chumma chumma bye bye nu solli solli hurt panuren.. I am sorry..mu na venum.nu solala..",
+                date: "2025-06-30"
+            },
+            {
+                content: "Muu nee kedaika na rombha kudutu vechirukanum da...seriously chumma pechuku solala..mu..nanu.. vera yaara irundalum un place la enna podi mairu Nu vittu poirupanga aama nee apdi enna vittu pogala even after knowing all my worst side you decided to stay with me. Enaku nallave puridhu how much you love me nu...I want it all..I own you I am not ready to leave you at any cost I am sorry for everything mu eppa um kepa un manasula irundu solu na unaku venuma vendama nu..ipovum seri eppavum seri na soluren nee enaku Venu...vera yaarum enna ipdi handle panna maatanga...nee epdi mu... ❤️",
+                date: "2025-06-30"
+            },
+            {
+                content: "11 11- thank you universe...lalith ah vera yarukum kudukama enaku kuduthaduku..❤‍🩹🥺.",
+                date: "2025-07-18"
+            },
+            {
+                content: "Ennalayum mudiyadu da adhu unake theriyum... nee ilama ennala iruka mudiya muu... I want you till my last breath....",
+                date: "2025-07-19"
+            },
+            {
+                content: "Suicide panura thought vanduchuna enna Pathi oru sec yosichu paaru.. namma azhaga oru family ah uruvakanum da.. future la..nee thana sonna future la nee na namma pasanga nu azhaga family venum nu..adha yosichu paaru.",
+                date: "2025-07-28"
+            },
+            {
+                content: "Nanu un kooda tha mu irupen...engayum ennalayu poga mudiyau..unna vittu🥺🥺🥺 adhu en promise...🥺🫂❤‍🩹.",
+                date: "2025-07-31"
+            },
+            {
+                content: "Unkoodave irupen 🫂🫂.",
+                date: "2025-07-31"
+            },
+            {
+                content: "Muuuu....enaku unna rombha pidichurukuuuu da muu... unkooda irukurapa oru kolanda maari feel panuren theriyumaaa.... like literally a baby da...🥰🥰🥰🙈🙈💗 nee enna oru baby Mari pathukura theriyumaaa.. adhuvum nee en dress ah adjust pannum bodhu...wowwww epdi irunduchu theriyumaa🙈🙈�🙈🙈🥹🥹🥹🥹🥹🎀🤍🤍🤍🤍✨✨✨.... nejamaaaa...nalla vela nee Belgie ku kutitu pona ilana Starbucks la privacy eh irundirukaadu ... rombha Nalla irunduchulaa muu... yarum ilada tym la neyu nanu panna vishayam lam..🙈🙈🙈 mamaaaa nee en breast ah thodum bodhu epdi iruku theriyumaaaaaa...🤤🤤🤤 adhuvum ripples oda vilayaduviyaa...😍😍😍😍😍 woww chumma apdi iruku enakuuu🙈🙈🙈🙈🤍... mood aanuchu theriyuma angaye.. ipo mattu veeda irunda namma innoru round matter panirupom la..🤭🤭.. aana na iniku nalla sirichen.. nalla irunduchu namma innoru maraka mudiyada memory ah create panitom pathiyaaa...namma mattum amma vella povanga nu wait pantu irundom na then meet panirukave mudiyadu....",
+                date: "2025-08-03"
+            },
+            {
+                content: "Nalla vela da mama namma crt time ku plan panni vandom ilana nenachu paru..idhulam nadandirukumaaa...🥰🥰 muu un frnds ku rombha sorry sonnenu sollu pavam rombha neram wait pannanga then tablet arrange panni thanda anna ku rombha rombha thanks sonnen solu muu... then rombha sorry da unna restroom la keela thalli vitten adhu venum nu na panala da.. nee kaal pidichiya adhan kaiya eduthen nee poi vilunduta.. enaku rombha pidichudu muu unnayum indha day va yum.. thirupi eppo meet panna porom nu therla aana kedacha opportunity ah proper ah use panikittom namma..adisayama enga amma vella poga allow pantanga.. enaku amma ku ennachu therla.. vella saptu kooda va nu soltanga da..avanga mattum apdi sola la na then namma meet eh paniruka mudiyadu mu. Also muu iniku nee rombha azhaga irunda da.. cooler lam potu varum bodhu apdiye movie star mari irunda adhuvum black poturundiyaaa...pahh chumma apdi irunda da nee😍😍😍😍😍🤍🤍...nejamave black is your colour....",
+                date: "2025-08-03"
+            },
+            {
+                content: "Nee vandi otum bodhu kooda rombha azhaga irunda chello...un pinnadi nadandu varum bodhu parthen nanu..😋😋 unkooda innu comfortable ah innu attached ah innu loved ah feel panuren theriyumaaa...🥰🥰🥰🥰 cha one day ke ipdi irukey..apo life long epdi irukummmm😍🥰😋🥹💗😭🤌.... unnala mattum tha ipdi enna pathuka mudiyum mu..nee ovoru tym um adha prove panura... nee pathukura mari yaru pathuka matanga muu..sorry da iniku unna aluga vechiten mu ..so sorry muu..iniku na rombha special ah feel pannen theriyumaa🙈🙈🥰🥰thanks muu...ellathuku mukiyama na alachala irundalum enakaga vandala..rombha thanks da... enna safe ah road cross panni drop pannaduku.. 😘😘😘 crt ah cross panni vittu poniya. En frnd oda amma va parthen..ayo bayanduten theriyuma... na paatuku vanten avangala paakada mari. Then notre dame bus kooda parthen muu.. en stopping la adhula irundu students lam namma uniform potutu erangi vandanga ..nejamave schl matu ilana..en life la nee kedachiruka maata theriyuma...",
+                date: "2025-08-03"
+            },
+            {
+                content: "Nammala serthi vechadu indha schl tha mu..en stopping la bus ah patutu emotional aachu. That's where everything started. 🥹🥹🥹💗 paaru mu namma enga vandurukom nu 10th ananya kitta idhulam sonna nambirukave maata mamaa...🥹🥹 cha nee mattum en life la varala na en life ivlo happy ah irundirukumaaa🥺❤‍🩹.",
+                date: "2025-08-03"
+            },
+            {
+                content: "Unna epdi ellam miss panuren theriyuma.. actually adhu unmai tha..nee pathukura maari yaru pathuka matanga muu I am safe hands.. nee enna nalla pathukura da🥰🥰.",
+                date: "2025-08-03"
+            },
+            {
+                content: "Muu nee avlo azhaga soliruka enna vittu poida matala nuu🥹🥹🥹💗❤‍🩹 na po maaten mama..un mela promise.",
+                date: "2025-08-03"
+            }
+        ];
+
+        // --- Initialize the Page ---
+        function initPage() {
+            createStars();
+            renderMessageSelectors();
+            setupEventListeners();
+            
+            // Hide the loading screen after a short delay to allow animations to start
+            setTimeout(() => {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                    animateShootingStar(); // Call the new animation function
+                    setInterval(createFloatingEmoji, 2000);
+                }, 1000);
+            }, 2000);
+        }
+
+        // --- Create Twinkling Stars ---
+        function createStars() {
+            for (let i = 0; i < 200; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random properties
+                const size = Math.random() * 3;
+                const xPos = Math.random() * 100;
+                const yPos = Math.random() * 100;
+                const duration = 2 + Math.random() * 3;
+                const opacity = 0.5 + Math.random() * 0.5;
+                
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${xPos}%`;
+                star.style.top = `${yPos}%`;
+                star.style.setProperty('--duration', `${duration}s`);
+                star.style.setProperty('--opacity', opacity);
+                
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // --- Render Message Selector Cards ---
+        function renderMessageSelectors() {
+            messages.forEach((message, index) => {
+                const selectorCard = document.createElement('article');
+                selectorCard.classList.add('message-selector-card');
+                selectorCard.setAttribute('data-message-index', index);
+                
+                const previewText = message.content.substring(0, 50) + (message.content.length > 50 ? '...' : '');
+
+                selectorCard.innerHTML = `
+                    <div class="selector-date">${formatDate(message.date)}</div>
+                    <div class="selector-preview">${previewText}</div>
+                `;
+                
+                messageSelectorContainer.appendChild(selectorCard);
+
+                // Apply fade-in animation with a delay
+                selectorCard.style.animation = `fade-in-up 0.5s ease-out forwards ${index * 0.1}s`;
+            });
+            
+            // Automatically display the first message on load
+            if (messages.length > 0) {
+                displayMessage(0);
+                const firstSelector = messageSelectorContainer.querySelector('.message-selector-card');
+                if (firstSelector) {
+                    firstSelector.classList.add('active');
+                }
+            }
+        }
+
+        // --- Format Date ---
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            });
+        }
+
+        // --- Setup Event Listeners ---
+        function setupEventListeners() {
+            // Parallax Effect for the Moon
+            window.addEventListener('scroll', () => {
+                const scrollY = window.scrollY;
+                moon.style.transform = `translateY(${scrollY * 0.3}px)`;
+            });
+
+            // Audio Control
+            audioButton.addEventListener('click', toggleAudio);
+            
+            // Next Message Button
+            nextMessageBtn.addEventListener('click', showNextMessage);
+
+            // Message Selector Buttons
+            messageSelectorContainer.addEventListener('click', (e) => {
+                const selectorCard = e.target.closest('.message-selector-card');
+                if (selectorCard) {
+                    // Remove 'active' class from all selectors
+                    document.querySelectorAll('.message-selector-card').forEach(card => {
+                        card.classList.remove('active');
+                    });
+                    // Add 'active' class to the clicked selector
+                    selectorCard.classList.add('active');
+                    currentMessageIndex = parseInt(selectorCard.getAttribute('data-message-index'));
+                    displayMessage(currentMessageIndex);
+                }
+            });
+
+            // Audio play on first interaction
+            document.addEventListener('click', initAudio, { once: true });
+            document.addEventListener('scroll', initAudio, { once: true });
+        }
+
+        // --- Show the next message in the sequence ---
+        function showNextMessage() {
+            currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+            
+            // BUG FIX: Now calls displayMessage to update the content
+            displayMessage(currentMessageIndex);
+            
+            // Update the 'active' class on the small selector cards
+            document.querySelectorAll('.message-selector-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            const nextSelector = messageSelectorContainer.querySelector(`[data-message-index="${currentMessageIndex}"]`);
+            if (nextSelector) {
+                nextSelector.classList.add('active');
+            }
+        }
+        
+        // --- Display a Message in the main card ---
+        function displayMessage(index) {
+            if (isTyping) return;
+            const message = messages[index];
+            if (message) {
+                typeWriter(displayMessageContent, message.content, () => {
+                    displayMessageMeta.textContent = `Sent on: ${formatDate(message.date)}`;
+                });
+            }
+        }
+
+        // --- Audio Control ---
+        function toggleAudio() {
+            if (isMuted) {
+                audio.play().catch(e => console.error("Audio play failed:", e));
+                audioIcon.textContent = '🔊';
+            } else {
+                audio.pause();
+                audioIcon.textContent = '🔇';
+            }
+            isMuted = !isMuted;
+        }
+
+        // Initialize audio on first interaction
+        function initAudio() {
+            if (!isMuted) {
+                audio.play().catch(e => console.error("Initial audio play failed:", e));
+            }
+        }
+
+        // --- Typewriter Effect ---
+        function typeWriter(element, text, callback) {
+            if (isTyping) return;
+            
+            isTyping = true;
+            let i = 0;
+            element.textContent = '';
+            element.classList.add('typing');
+            
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 30 + Math.random() * 40);
+                } else {
+                    element.classList.remove('typing');
+                    isTyping = false;
+                    if (callback) {
+                        callback();
+                    }
+                }
+            }
+            
+            type();
+        }
+
+        // --- Floating Emojis ---
+        function createFloatingEmoji() {
+            if (document.visibilityState === 'hidden') return;
+            
+            const emoji = document.createElement('div');
+            emoji.classList.add('floating-emoji');
+            const emojis = ['❤️', '💬', '✨', '🌙', '💖', '💌'];
+            emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            const size = Math.random() * 20 + 15;
+            const startX = Math.random() * 100;
+            const drift = (Math.random() - 0.5) * 200;
+            const duration = 10 + Math.random() * 15;
+            
+            emoji.style.fontSize = `${size}px`;
+            emoji.style.setProperty('--start-x', `${startX}vw`);
+            emoji.style.setProperty('--drift', `${drift}px`);
+            
+            document.body.appendChild(emoji);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                emoji.remove();
+            }, duration * 1000);
+        }
+
+        // --- Shooting Star Animation ---
+        function animateShootingStar() {
+            const star = document.createElement('div');
+            star.classList.add('shooting-star');
+            
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight * 0.3;
+            const size = Math.random() * 2 + 1;
+            const duration = 1.5 + Math.random();
+            const angle = 45 + (Math.random() * 40 - 20); // Random angle for a less rigid path
+            
+            star.style.left = `${startX}px`;
+            star.style.top = `${startY}px`;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            
+            // Append the star to the body
+            document.body.appendChild(star);
+            
+            // Animate the shooting star
+            star.animate([
+                {
+                    opacity: 0,
+                    transform: 'rotate(0deg)'
+                },
+                {
+                    opacity: 1,
+                    transform: 'rotate(0deg)'
+                },
+                {
+                    opacity: 0,
+                    transform: `translate(${window.innerWidth}px, ${window.innerHeight}px) rotate(${angle}deg)`
+                }
+            ], {
+                duration: duration * 1000,
+                easing: 'ease-in'
+            });
+            
+            // Remove the star element after animation is complete
+            setTimeout(() => {
+                star.remove();
+            }, duration * 1000);
+            
+            // Schedule the next shooting star
+            setTimeout(animateShootingStar, 10000 + Math.random() * 10000);
+        }
+        
+
+        // Initialize the page when loaded
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
+�
